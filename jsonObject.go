@@ -163,11 +163,31 @@ func getObjectCoding(structName string, object *JsonObject, buffer *bytes.Buffer
 					}
 				case reflect.Slice:
 					subObject := attrObject.Value.([]*JsonObject)[0]
-					if len(subObject.Attributes) >0 {
-						return "[]*"+camelString(getSubAtrrName(structName,key))
-					}else {
-						return "[]"+reflect.Interface.String()+"{}"
+					switch subObject.VType {
+					case reflect.Struct:
+						if len(subObject.Attributes) >0 {
+							return "[]*"+camelString(getSubAtrrName(structName,key))
+						}else {
+							return "[]"+reflect.Interface.String()+"{}"
+						}
+					case reflect.Slice:
+						subObject := attrObject.Value.([]*JsonObject)[0]
+						switch subObject.VType {
+						case reflect.Struct:
+							if len(subObject.Attributes) >0 {
+								return "[][]*"+camelString(getSubAtrrName(structName,key))
+							}else {
+								return "[][]"+reflect.Interface.String()+"{}"
+							}
+						case reflect.Slice:
+							return "[][][]*"
+						default:
+							return "[][]"+subObject.VType.String()
+						}
+					default:
+						return "[]"+subObject.VType.String()
 					}
+
 				case reflect.Interface:
 					return reflect.Interface.String()+"{}"
 				default:
