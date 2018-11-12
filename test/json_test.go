@@ -88,7 +88,7 @@ func Test_json_array111(t *testing.T) {
 	data := `{
 	  "id": [
 		-524042.5,
-		2312314444455555555555555
+		231231444445555555
 	  ],
 	  "name": "酷旅-mob-otv-2",
 	  "male": true,
@@ -98,8 +98,7 @@ func Test_json_array111(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		jsonBytes, _ := json.Marshal(object)
-		fmt.Println(string(jsonBytes))
+		fmt.Println(object.GetCoding("travel"))
 	}
 }
 
