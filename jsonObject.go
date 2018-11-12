@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"reflect"
 	"strings"
+	"sort"
 )
 
 type JsonObject struct {
@@ -125,10 +126,25 @@ type attribute struct {
 	name string   `json:"name"`
 	jsonName string
 	attrType string
+	origType reflect.Kind
 }
+
+type attributeSlice []*attribute
+
+func (c attributeSlice) Len() int {
+	return len(c)
+}
+func (c attributeSlice) Swap(i, j int) {
+	c[i], c[j] = c[j], c[i]
+}
+func (c attributeSlice) Less(i, j int) bool {
+	return c[i].name < c[j].name
+}
+
 func getObjectCoding(structName string, object *JsonObject, buffer *bytes.Buffer) {
+
 	buffer.WriteString("\ntype "+camelString(structName)+" struct{\n")
-	attrs := []*attribute{}
+	attrs := attributeSlice{}
 	nameMaxLength := 0
 	attrTypeMaxLength := 0
 	for key,attrObject:=range object.Attributes{
@@ -136,6 +152,7 @@ func getObjectCoding(structName string, object *JsonObject, buffer *bytes.Buffer
 		attr := &attribute{
 			name:attrName,
 			jsonName:key,
+			origType:attrObject.VType,
 			attrType: func()string {
 				switch attrObject.VType {
 				case reflect.Struct:
@@ -145,9 +162,9 @@ func getObjectCoding(structName string, object *JsonObject, buffer *bytes.Buffer
 						return reflect.Interface.String()+"{}"
 					}
 				case reflect.Slice:
-					subObject := object.Value.([]*JsonObject)[0]
+					subObject := attrObject.Value.([]*JsonObject)[0]
 					if len(subObject.Attributes) >0 {
-						return "[]*"+camelString(getSubAtrrName(structName,attrName))
+						return "[]*"+camelString(getSubAtrrName(structName,key))
 					}else {
 						return "[]"+reflect.Interface.String()+"{}"
 					}
@@ -166,12 +183,64 @@ func getObjectCoding(structName string, object *JsonObject, buffer *bytes.Buffer
 		}
 		attrs = append(attrs,attr)
 	}
+	sort.Sort(attrs)
 	for _,attr :=range attrs{
 		buffer.WriteString("\t"+attr.name+getblanks(attr.name,nameMaxLength)+" "+
 			attr.attrType+getblanks(attr.attrType,attrTypeMaxLength)+" "+
 				"`json:\""+attr.jsonName+"\"`"+" \n")
 	}
-	buffer.WriteString("}")
+	buffer.WriteString("}\n")
+	/*
+
+func (this *NihaoComponents) GetCityName() string {
+	if this == nil {
+		return ""
+	}
+	return this.CityName
+}
+	*/
+	for _,attr :=range attrs{
+		// get方法
+		buffer.WriteString("func (this *"+camelString(structName)+") Get"+attr.name+"() "+attr.attrType+" {\n")
+		buffer.WriteString("\tif this == nil {\n")
+		switch attr.origType {
+		case reflect.Int32,reflect.Int64,reflect.Float64:
+			buffer.WriteString("\t\treturn 0\n")
+		case reflect.Bool:
+			buffer.WriteString("\t\treturn false\n")
+		case reflect.String:
+			buffer.WriteString("\t\treturn \"\"\n")
+		default:
+			buffer.WriteString("\t\treturn nil\n")
+		}
+		buffer.WriteString("\t}\n")
+		buffer.WriteString("\treturn this."+attr.name+"\n")
+		buffer.WriteString("}\n")
+		// set方法
+		paramName:=getParamName(attr.name)
+		buffer.WriteString("func (this *"+camelString(structName)+") Set"+attr.name+"("+paramName+" "+attr.attrType+") {\n")
+		buffer.WriteString("\tif this == nil {\n")
+		buffer.WriteString("\t\treturn\n")
+		buffer.WriteString("\t}\n")
+		buffer.WriteString("\tthis."+attr.name+" = "+paramName+"\n")
+		buffer.WriteString("}\n")
+	}
+	/*
+
+
+func (this *NihaoComponents) SetCityName(cityName string) {
+	if this == nil {
+		return
+	}
+	this.CityName = cityName
+}
+	 */
+}
+func getParamName(name string) string {
+	if len(name)>1{
+		return strings.ToLower(string(name[0]))+name[1:]
+	}
+	return name
 }
 
 func getSubAtrrName(father ,sub string) string {

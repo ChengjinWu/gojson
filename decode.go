@@ -510,7 +510,6 @@ func (d *decodeState) object() *JsonObject {
 		if !ok {
 			d.error(errPhase)
 		}
-
 		// Read : before value.
 		if op == scanSkipSpace {
 			op = d.scanWhile(scanSkipSpace)
