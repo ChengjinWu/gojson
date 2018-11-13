@@ -14,6 +14,7 @@ import (
 ```
 
 ## 主要特性
+[测试文件](https://github.com/ChengjinWu/gojson/blob/master/test/json_test.go)
 * json字符串校验（JSON string validation）
 * 反序列化JSON字符串成Golang对象（deserializing JSON strings into Golang objects）
 * 反序列化JSON字符串成Golang结构体、get、set方法（deserializing JSON strings into Golang code）
