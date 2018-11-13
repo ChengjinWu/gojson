@@ -21,6 +21,7 @@ import (
 ## 性能
 
 [测试文件](https://github.com/ChengjinWu/gojson/blob/master/test/json_test.go)
+
 |库\次数|10|100|1000|10000|100000|1000000
 |------------|------------|------------|------------|------------|------------|------------|
 |github.com/ChengjinWu/gojson|375µs|476µs|208µs|227.398ms|9.202ms|80.614ms|
