@@ -14,12 +14,13 @@ import (
 ```
 
 ## 主要特性
-[测试文件](https://github.com/ChengjinWu/gojson/blob/master/test/json_test.go)
+
 * json字符串校验（JSON string validation）
 * 反序列化JSON字符串成Golang对象（deserializing JSON strings into Golang objects）
 * 反序列化JSON字符串成Golang结构体、get、set方法（deserializing JSON strings into Golang code）
 ## 性能
 
+[测试文件](https://github.com/ChengjinWu/gojson/blob/master/test/json_test.go)
 |库\次数|10|100|1000|10000|100000|1000000
 |------------|------------|------------|------------|------------|------------|------------|
 |github.com/ChengjinWu/gojson|375µs|476µs|208µs|227.398ms|9.202ms|80.614ms|
